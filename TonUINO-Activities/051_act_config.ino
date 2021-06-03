@@ -142,12 +142,12 @@ void ConfigActivity::onButtonReleased(const uint8_t button)
         }
         case BTN_SELECT: {
           switch (step) {
-            case ConfigMenuSetVolume:      if (button == BTN_SELECT) settings.volume = player.getVolume(); break;
-            case ConfigMenuSetVolumeMin:   if (button == BTN_SELECT) settings.volumeMin = player.getVolume(); break;
-            case ConfigMenuSetVolumeMax:   if (button == BTN_SELECT) settings.volumeMax = player.getVolume(); break;
-            case ConfigMenuSetHpVolume:    if (button == BTN_SELECT) settings.hpVolume = player.getVolume(); break;
-            case ConfigMenuSetHpVolumeMin: if (button == BTN_SELECT) settings.hpVolumeMin = player.getVolume(); break;
-            case ConfigMenuSetHpVolumeMax: if (button == BTN_SELECT) settings.hpVolumeMax = player.getVolume(); break;
+            case ConfigMenuSetVolume:      settings.volume = player.getVolume(); break;
+            case ConfigMenuSetVolumeMin:   settings.volumeMin = player.getVolume(); break;
+            case ConfigMenuSetVolumeMax:   settings.volumeMax = player.getVolume(); break;
+            case ConfigMenuSetHpVolume:    settings.hpVolume = player.getVolume(); break;
+            case ConfigMenuSetHpVolumeMin: settings.hpVolumeMin = player.getVolume(); break;
+            case ConfigMenuSetHpVolumeMax: settings.hpVolumeMax = player.getVolume(); break;
             default: {
               errUnhandledState(step);
             }
@@ -254,9 +254,9 @@ void ConfigActivity::initVolume(uint8_t vol)
   player.enqueue(0, SND_NUMBERS_BASE + vol);
 }
 
-void ConfigActivity::setStep(ConfigMenu step)
+void ConfigActivity::setStep(ConfigMenu nextStep)
 {
-  step = step;
+  step = nextStep;
   
   switch (step) {
     case ConfigMenuSetVolume:      initVolume(settings.volume); break;
