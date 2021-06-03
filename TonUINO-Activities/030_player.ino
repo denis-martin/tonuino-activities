@@ -1,5 +1,8 @@
 
-#define PLAYER_BUSYPIN 4
+#define PLAYER_BUSYPIN  4
+#define PLAYER_POWERPIN 6     // Pin for switching player module off using a MOSFET.
+                              // Gate of MOSFET should be connected to a pullup resistor so it is 
+                              // default-on.
 
 #define VOLUME_MIN 0          // as given by sound chip
 #define VOLUME_MAX 30         // as given by sound chip
@@ -216,8 +219,8 @@ public:
    * Power down
    */
   void powerDown() { 
-    dfplayer.disableDac();
     dfplayer.sleep();
+    digitalWrite(PLAYER_POWERPIN, LOW);
   }
 
   void setupA();
@@ -324,6 +327,10 @@ void Player::onHeadphoneJack(const bool plugged)
  */
 inline void Player::setupA()
 {
+  pinMode(PLAYER_POWERPIN, OUTPUT);
+  digitalWrite(PLAYER_POWERPIN, HIGH);
+  // no delay since we assume that the dfplayer was already on due to a pull-up resistor at the
+  // gate of the switching MOSFET
   dfplayer.begin(); // initialize DFPlayer Mini
 }
 

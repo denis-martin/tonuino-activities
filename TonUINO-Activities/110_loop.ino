@@ -5,13 +5,14 @@ unsigned int loopCounter = 0;
  * 
  * http://discourse.voss.earth/t/intenso-s10000-powerbank-automatische-abschaltung-software-only/805
  */
-#define shutdownPin 7
 void powerDown()
 {
   DBG(Serial.println(F("Powering down")));
 
-  digitalWrite(shutdownPin, LOW);
+#ifdef SHUTDOWN_PIN
+  digitalWrite(SHUTDOWN_PIN, HIGH);
   delay(500);
+#endif
   
   keycards_powerDown();
   player.powerDown();
@@ -46,9 +47,9 @@ void loop()
   buttons_loop();
   player.loop();
 
-  if (!(loopCounter % 8)) {
+  if (!(loopCounter % 4)) {
     // we only poll the card reader every nth loop iteration
-    // (approx. every 200ms)
+    // (approx. every 100ms)
     // polling takes about 25ms
     keycards_loop();
   }

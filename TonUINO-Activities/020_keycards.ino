@@ -316,13 +316,7 @@ int keycards_write(CardData *cardData)
 inline void keycards_powerDown()
 {
   mfrc522.PCD_AntennaOff();
-  //mfrc522.PCD_SoftPowerDown();
-  
-  // hard power down
-  pinMode(RST_PIN, OUTPUT);     // set reset PIN as output
-  digitalWrite(RST_PIN, HIGH);  // make sure we have a clean HIGH state
-  delay(1);                     // 8.8.1 Reset timing requirements says about 100ns. Let us be generous: 1ms
-  digitalWrite(RST_PIN, LOW);   // power down
+  mfrc522.PCD_SoftPowerDown();
 }
 
 /**

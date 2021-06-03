@@ -99,7 +99,12 @@ void setup()
   DBG(Serial.begin(115200));
   DBG(Serial.println(F("a3box is starting")));
   DBG(setTimer(millis()));
-  
+
+#ifdef SHUTDOWN_PIN
+  pinMode(SHUTDOWN_PIN, OUTPUT);
+  digitalWrite(SHUTDOWN_PIN, LOW);
+#endif
+
   player.setupA();
 
   loadSettings();

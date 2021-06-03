@@ -1,8 +1,14 @@
 
 /**
+ * Software switch-off using a Polulu switch (uncomment this if needed).
+ * Pin is set to LOW at startup and set to HIGH upon shutdown.
+ */
+//#define SHUTDOWN_PIN 7
+
+/**
  * Time in millis after which we power down as much as possible
  */
-#define STANDBY_TIME (15*1000) //(15*60*1000) // 15 minutes
+#define STANDBY_TIME (((unsigned long) 15)*60*1000) //(15*60*1000) // 15 minutes
 
 /**
  * Card UID buffer: 6 bytes
