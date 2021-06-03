@@ -213,7 +213,9 @@ void DefaultActivity::skipBackward()
     player.enqueue(currentFolder, currentTrack, true);
     
   } else if (playMode == PlayModeSingleTrack) {
-    player.enqueue(currentFolder, currentTrack, true);
+    if (currentFolder > 0 && currentTrack > 0) {
+      player.enqueue(currentFolder, currentTrack, true);
+    }
     
   }
 }
