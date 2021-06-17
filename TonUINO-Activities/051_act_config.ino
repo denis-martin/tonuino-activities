@@ -9,8 +9,10 @@ typedef enum ConfigMenu {
   ConfigMenuSetHpVolumeMax = 6,
 
   ConfigMenuNewCard = 10,
-  ConfigMenuChooseFolder = 11,
-  ConfigMenuChooseTrack = 12,
+  ConfigMenuChooseActivity = 11,
+  ConfigMenuChooseFolder = 12,
+  ConfigMenuChooseTrack = 13,
+  ConfigMenuChooseButton = 14
 } ConfigMenu;
 
 /**
@@ -88,7 +90,7 @@ void ConfigActivity::onNewBlankCard(const byte uid[])
   DBG(Serial.println(F("ConfigActivity: onNewBlankCard")));
   if (step < ConfigMenuNewCard) {
     resetCard();
-    setStep(ConfigMenuChooseFolder);
+    setStep(ConfigMenuChooseActivity);
   }
 }
 
@@ -131,13 +133,13 @@ void ConfigActivity::onButtonReleased(const uint8_t button)
         case BTN_UP: {
           player.volumeInc(step != ConfigMenuSetVolume && step != ConfigMenuSetHpVolume);
           player.enqueue(0, getVolumeSound(step), true);
-          player.enqueue(0, SND_NUMBERS_BASE + player.getVolume());
+          player.enqueueNumber(player.getVolume());
           break;
         }
         case BTN_DOWN: {
           player.volumeDec(step != ConfigMenuSetVolume && step != ConfigMenuSetHpVolume);
           player.enqueue(0, getVolumeSound(step), true);
-          player.enqueue(0, SND_NUMBERS_BASE + player.getVolume());
+          player.enqueueNumber(player.getVolume());
           break;
         }
         case BTN_SELECT: {
@@ -156,20 +158,45 @@ void ConfigActivity::onButtonReleased(const uint8_t button)
       }
       break;
     }
+    case ConfigMenuChooseActivity: {
+      switch (button) {
+        case BTN_UP: {
+          if (cardData.activity == (uint8_t) ActivityConfig) {
+            cardData.activity = (uint8_t) ActivityDefault;
+          } else if (cardData.activity < MAX_ACTIVITIES) {
+            cardData.activity += 1;
+          }
+          player.enqueueNumber(cardData.activity, true);
+          break;
+        }
+        case BTN_DOWN: {
+          if (cardData.activity == (uint8_t) ActivityConfig) {
+            cardData.activity = (uint8_t) ActivityDefault;
+          } else if (cardData.activity >= 1) {
+            cardData.activity -= 1;
+          } else { // cardData.activity == 0
+            cardData.activity = (uint8_t) ActivityConfig;
+          }
+          player.enqueueNumber(cardData.activity, true);
+          break;
+        }
+      }
+      break;
+    }
     case ConfigMenuChooseFolder: {
       switch (button) {
         case BTN_UP: {
           if (cardData.folder <= 99) {
             cardData.folder += 1;
           }
-          player.enqueue(0, SND_NUMBERS_BASE + cardData.folder, true);
+          player.enqueueNumber(cardData.folder, true);
           break;
         }
         case BTN_DOWN: {
           if (cardData.folder > 1) {
             cardData.folder -= 1;
           }
-          player.enqueue(0, SND_NUMBERS_BASE + cardData.folder, true);
+          player.enqueueNumber(cardData.folder, true);
           break;
         }
       }
@@ -180,15 +207,26 @@ void ConfigActivity::onButtonReleased(const uint8_t button)
         case BTN_UP: {
           if (cardData.track <= 255) {
             cardData.track += 1;
-            player.enqueue(0, SND_NUMBERS_BASE + cardData.track, true);
+            player.enqueueNumber(cardData.track, true);
           }
           break;
         }
         case BTN_DOWN: {
           if (cardData.track > 1) {
             cardData.track -= 1;
-            player.enqueue(0, SND_NUMBERS_BASE + cardData.track, true);
+            player.enqueueNumber(cardData.track, true);
           }
+          break;
+        }
+      }
+      break;
+    }
+    case ConfigMenuChooseButton: {
+      switch (button) {
+        case BTN_UP: // no break
+        case BTN_DOWN: {
+          cardData.button = button;
+          player.enqueueNumber(cardData.button, true);
           break;
         }
       }
@@ -220,10 +258,11 @@ void ConfigActivity::onButtonLongPressed(const uint8_t button)
     }
     case BTN_SELECT: {
       switch (step) {
-        case ConfigMenuChooseFolder: // no break
-        case ConfigMenuChooseTrack: {
+        case ConfigMenuChooseActivity: // no break
+        case ConfigMenuChooseFolder:   // no break
+        case ConfigMenuChooseTrack:    // no break
+        case ConfigMenuChooseButton: {
           // save card
-          cardData.activity = (uint8_t) ActivityDefault;
           if (keycards_write(&cardData)) {
             player.enqueue(0, SND_SUCCESS, true);
           } else {
@@ -244,14 +283,13 @@ void ConfigActivity::onButtonLongPressed(const uint8_t button)
 void ConfigActivity::resetCard()
 {
   memset(&cardData, 0, sizeof(CardData));
-  cardData.folder = 1;
 }
 
 void ConfigActivity::initVolume(uint8_t vol)
 {
   player.setVolume(vol);
   player.enqueue(0, getVolumeSound(step), true);
-  player.enqueue(0, SND_NUMBERS_BASE + vol);
+  player.enqueueNumber(vol);
 }
 
 void ConfigActivity::setStep(ConfigMenu nextStep)
@@ -265,8 +303,10 @@ void ConfigActivity::setStep(ConfigMenu nextStep)
     case ConfigMenuSetHpVolume:    initVolume(settings.hpVolume); break;
     case ConfigMenuSetHpVolumeMin: initVolume(settings.hpVolumeMin); break;
     case ConfigMenuSetHpVolumeMax: initVolume(settings.hpVolumeMax); break;
+    case ConfigMenuChooseActivity: player.enqueue(0, SND_CONFIG_SELECT_ACTIVITY, true); break;
     case ConfigMenuChooseFolder:   player.enqueue(0, SND_CONFIG_SELECT_FOLDER, true); break;
     case ConfigMenuChooseTrack:    player.enqueue(0, SND_CONFIG_SELECT_TRACK, true); break;
+    case ConfigMenuChooseButton:   player.enqueue(0, SND_CONFIG_SELECT_BUTTON, true); break;
     default: {
       DBG(Serial.print(F("ERROR: ConfigActivity::setStep() step not handled: ")); Serial.println(step));
     }
@@ -283,8 +323,10 @@ void ConfigActivity::nextStep()
     case ConfigMenuSetHpVolumeMin: setStep(ConfigMenuSetHpVolumeMax); break;
     case ConfigMenuSetHpVolumeMax: setStep(ConfigMenuSetVolume); break;
     
+    case ConfigMenuChooseActivity: setStep(ConfigMenuChooseFolder); break;
     case ConfigMenuChooseFolder:   setStep(ConfigMenuChooseTrack); break;
-    case ConfigMenuChooseTrack:    setStep(ConfigMenuChooseFolder); break;
+    case ConfigMenuChooseTrack:    setStep(ConfigMenuChooseButton); break;
+    case ConfigMenuChooseButton:   setStep(ConfigMenuChooseActivity); break;
     default: {
       DBG(Serial.print(F("ERROR: ConfigActivity::nextStep() step not handled: ")); Serial.println(step));
     }

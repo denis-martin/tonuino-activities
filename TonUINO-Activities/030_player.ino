@@ -175,6 +175,12 @@ public:
   void enqueue(const uint8_t folder, const uint16_t track, const bool resetQueue = false);
 
   /**
+   * Enqueues a number.
+   * Use resetQueue = true to play the track immediately. This also removes all tracks from queue.
+   */
+  void enqueueNumber(const uint8_t number, const bool resetQueue = false);
+
+  /**
    * Increase the volume by one step, respecting configured limits.
    */
   void volumeInc(const bool nolimits = false);
@@ -285,6 +291,18 @@ void Player::enqueue(const uint8_t folder, const uint16_t track, const bool rese
       playNotification(SND_QUEUE_FULL);
       
     }
+  }
+}
+
+/**
+ * Enqueues a number.
+ */
+void Player::enqueueNumber(const uint8_t number, const bool resetQueue)
+{
+  if (number == 0) {
+    enqueue(0, SND_NUMBERS_NULL, resetQueue);
+  } else {
+    enqueue(0, SND_NUMBERS_BASE + number, resetQueue);
   }
 }
 

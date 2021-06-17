@@ -6,9 +6,10 @@
 //#define SHUTDOWN_PIN 7
 
 /**
- * Time in millis after which we power down as much as possible
+ * Time in millis after which we power down as much as possible, hopefully
+ * triggering auto-power-off of the PowerBank
  */
-#define STANDBY_TIME (((unsigned long) 15)*60*1000) //(15*60*1000) // 15 minutes
+#define STANDBY_TIME (((unsigned long) 30)*60*1000) // 30 minutes
 
 /**
  * Card UID buffer: 6 bytes
@@ -34,7 +35,8 @@ typedef struct __attribute__ ((packed)) {
   uint8_t activity;     // 0xff: admin, 0x00: default
   uint8_t folder;       // 0x80: global folder; additional bits are used to encode track numbers > 255 in this case
   uint8_t track;        // track within the folder; if 0, then play the whole folder
-  uint8_t reserved[9];  // reserved for future / activity related extensions
+  uint8_t button;       // associate a button with this card (e.g., a player or a color)
+  uint8_t reserved[8];  // reserved for future / activity related extensions
 } CardData;
 static_assert(sizeof(CardData) == 16, "CardData size unexpected!"); // if we use more, we need to modify the card read/write logic a bit
 
@@ -69,6 +71,7 @@ typedef enum ActivityCode {
   ActivityDefault = 0x00,
   ActivityConfig = 0xff
 } ActivityCode;
+#define MAX_ACTIVITIES ActivityDefault
 
 /**
  * Abstract activity class
